@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.22)
+
+# Mac builds (must come before project()): one universal binary for Intel and Apple Silicon
+set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "")
+
 project(AiryV22 VERSION 2.2.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Windows (MSVC): static runtime so no extra DLLs are needed
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
-# Mac builds: one universal binary for Intel and Apple Silicon
-set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "")
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "")
 
 # Use a local JUCE checkout if JUCE_DIR is given, otherwise download JUCE 7.0.12
 if(DEFINED JUCE_DIR)

@@ -48,6 +48,7 @@ jobs:
         run: |
           codesign --force --deep --sign - "build/AiryV22_artefacts/Release/AU/Airy v2.2.component"
           codesign --force --deep --sign - "build/AiryV22_artefacts/Release/VST3/Airy v2.2.vst3"
+          lipo "build/AiryV22_artefacts/Release/AU/Airy v2.2.component/Contents/MacOS/Airy v2.2" -verify_arch arm64 x86_64
           lipo -info "build/AiryV22_artefacts/Release/AU/Airy v2.2.component/Contents/MacOS/Airy v2.2"
       - name: Validate AU with auval
         run: |
