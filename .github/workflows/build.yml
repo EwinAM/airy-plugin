@@ -5,6 +5,8 @@ on:
     branches: [main]
     tags: ["v*"]
   pull_request:
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -71,8 +73,8 @@ jobs:
           path: dist/Airy-v2.2-Mac-AU-VST3.zip
 
   release:
-    name: Publish release
-    if: startsWith(github.ref, 'refs/tags/v')
+    name: Attach files to release
+    if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
     needs: [windows, macos]
     runs-on: ubuntu-latest
     steps:
@@ -80,11 +82,14 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
-      - name: Create release
+      - name: Upload to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name || github.ref_name }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" artifacts/*.zip \
-            --repo "${GITHUB_REPOSITORY}" \
-            --title "Airy ${GITHUB_REF_NAME}" \
-            --notes "Download **Airy-v2.2-Windows-VST3.zip** for Windows (Cubase, FL Studio, Ableton...) or **Airy-v2.2-Mac-AU-VST3.zip** for Mac (Logic uses the AU). Install steps are inside each zip and in the README."
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" artifacts/*.zip --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" artifacts/*.zip --repo "$GITHUB_REPOSITORY" --title "Airy $TAG" \
+              --notes "Windows: Airy-v2.2-Windows-VST3.zip. Mac (Logic AU + VST3): Airy-v2.2-Mac-AU-VST3.zip. Install steps are inside each zip."
+          fi
