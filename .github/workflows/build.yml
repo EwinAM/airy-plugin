@@ -1,0 +1,86 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows (VST3)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -G "Visual Studio 17 2022" -A x64
+      - name: Build
+        run: cmake --build build --config Release --target AiryV22_VST3 --parallel
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/Airy-v2.2-Windows | Out-Null
+          Copy-Item -Recurse "build/AiryV22_artefacts/Release/VST3/Airy v2.2.vst3" dist/Airy-v2.2-Windows/
+          Copy-Item install/INSTALL-Windows.txt dist/Airy-v2.2-Windows/
+          Compress-Archive -Path dist/Airy-v2.2-Windows -DestinationPath dist/Airy-v2.2-Windows-VST3.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Airy-v2.2-Windows-VST3
+          path: dist/Airy-v2.2-Windows-VST3.zip
+
+  macos:
+    name: macOS (AU + VST3, Universal)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release --target AiryV22_AU AiryV22_VST3 --parallel
+      - name: Sign (ad-hoc)
+        run: |
+          codesign --force --deep --sign - "build/AiryV22_artefacts/Release/AU/Airy v2.2.component"
+          codesign --force --deep --sign - "build/AiryV22_artefacts/Release/VST3/Airy v2.2.vst3"
+          lipo -info "build/AiryV22_artefacts/Release/AU/Airy v2.2.component/Contents/MacOS/Airy v2.2"
+      - name: Validate AU with auval
+        run: |
+          mkdir -p ~/Library/Audio/Plug-Ins/Components
+          cp -R "build/AiryV22_artefacts/Release/AU/Airy v2.2.component" ~/Library/Audio/Plug-Ins/Components/
+          killall -9 AudioComponentRegistrar 2>/dev/null || true
+          sleep 2
+          auval -a | grep -i "Ar22" || true
+          auval -strict -v aufx Ar22 Ewin
+      - name: Package
+        run: |
+          mkdir -p "dist/Airy-v2.2-Mac"
+          cp -R "build/AiryV22_artefacts/Release/AU/Airy v2.2.component" "dist/Airy-v2.2-Mac/"
+          cp -R "build/AiryV22_artefacts/Release/VST3/Airy v2.2.vst3" "dist/Airy-v2.2-Mac/"
+          cp install/INSTALL-Mac.txt "dist/Airy-v2.2-Mac/"
+          cd dist && ditto -c -k --sequesterRsrc --keepParent "Airy-v2.2-Mac" "Airy-v2.2-Mac-AU-VST3.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Airy-v2.2-Mac-AU-VST3
+          path: dist/Airy-v2.2-Mac-AU-VST3.zip
+
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" artifacts/*.zip \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "Airy ${GITHUB_REF_NAME}" \
+            --notes "Download **Airy-v2.2-Windows-VST3.zip** for Windows (Cubase, FL Studio, Ableton...) or **Airy-v2.2-Mac-AU-VST3.zip** for Mac (Logic uses the AU). Install steps are inside each zip and in the README."

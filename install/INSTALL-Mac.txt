@@ -1,0 +1,24 @@
+AIRY v2.2 - Vocal air enhancer (Mac: AU + VST3, Intel and Apple Silicon)
+
+INSTALL
+1. Copy "Airy v2.2.component" (AU, for Logic Pro / GarageBand) to:
+   ~/Library/Audio/Plug-Ins/Components
+   Copy "Airy v2.2.vst3" (for Cubase, Ableton, FL Studio, Reaper...) to:
+   ~/Library/Audio/Plug-Ins/VST3
+   (In Finder: Go > Go to Folder..., paste the path.)
+
+2. The plugin is not signed with an Apple Developer account, so macOS blocks it
+   the first time. Open Terminal and paste this once:
+
+   xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/"Airy v2.2.component" ~/Library/Audio/Plug-Ins/VST3/"Airy v2.2.vst3"
+
+3. Open Logic Pro. It scans new plugins at startup. If Airy does not show up:
+   Logic Pro > Settings > Plug-in Manager > select "Airy v2.2" > Reset & Rescan Selection.
+4. Find it under Audio Units > Ewin > Airy v2.2.
+
+TIPS
+- Drag a knob up or down to change it. Double-click to reset.
+- Hover over any control for a short explanation. The ? button turns these off.
+- The power button bypasses the whole effect.
+- Drag the bottom-right corner to resize the window (70% to 200%).
+- For the Width effect on a mono vocal, use Airy on a stereo track or bus.

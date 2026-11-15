@@ -1,0 +1,17 @@
+AIRY v2.2 - Vocal air enhancer (VST3, Windows 64-bit)
+
+INSTALL
+1. Copy the "Airy v2.2.vst3" folder to:
+   C:\Program Files\Common Files\VST3
+2. Rescan plugins in your DAW (in Cubase: Studio > VST Plug-in Manager > Rescan),
+   or just restart the DAW.
+3. "Airy v2.2" appears under Effects > EQ.
+
+Airy v2.2 installs as its own plugin, so older Airy versions stay installed.
+
+TIPS
+- Drag a knob up or down to change it. Double-click to reset.
+- Hover over any control for a short explanation. The ? button turns these off.
+- The power button bypasses the whole effect.
+- Drag the bottom-right corner to resize the window (70% to 200%).
+- For the Width effect on a mono vocal, use Airy on a stereo track or a stereo group/FX channel.
