@@ -35,6 +35,9 @@ jobs:
   macos:
     name: macOS (AU + VST3, Universal)
     runs-on: macos-latest
+    env:
+      # JUCE 7 needs an older deployment target to build with the macOS 15+ SDK
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
     steps:
       - uses: actions/checkout@v5
       - name: Configure
